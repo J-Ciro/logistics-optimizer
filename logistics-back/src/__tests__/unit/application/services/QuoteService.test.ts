@@ -49,13 +49,13 @@ describe('QuoteService', () => {
       const quotes = await quoteService.getAllQuotes(request);
 
       // FedEx: (50 + 10*3.5) = 85 * 1.15 = 97.75
-      expect(quotes[0].price).toBe(97.75);
+      expect(quotes[0].price).toBeCloseTo(97.75, 2);
       
       // DHL: (45 + 10*4.0) = 85 * 1.15 = 97.75
-      expect(quotes[1].price).toBe(97.75);
+      expect(quotes[1].price).toBeCloseTo(97.75, 2);
       
       // Local: (60 + 10*2.5) = 85 * 1.15 = 97.75
-      expect(quotes[2].price).toBe(97.75);
+      expect(quotes[2].price).toBeCloseTo(97.75, 2);
     });
 
     it('should NOT apply fragile surcharge when fragile is false', async () => {
