@@ -8,7 +8,9 @@ describe('ValidationMessage', () => {
     
     const messageElement = screen.getByText('El peso es requerido');
     expect(messageElement).toBeInTheDocument();
-    expect(messageElement).toHaveClass('text-error');
+    // Check parent div for the error class
+    const parentDiv = messageElement.closest('div');
+    expect(parentDiv?.className).toContain('text-error');
   });
 
   it('should render warning message with yellow styling', () => {
@@ -16,7 +18,9 @@ describe('ValidationMessage', () => {
     
     const messageElement = screen.getByText('Advertencia: peso alto');
     expect(messageElement).toBeInTheDocument();
-    expect(messageElement).toHaveClass('text-warning');
+    // Check parent div for the warning class
+    const parentDiv = messageElement.closest('div');
+    expect(parentDiv?.className).toContain('text-warning');
   });
 
   it('should render info message with blue styling', () => {
@@ -24,7 +28,9 @@ describe('ValidationMessage', () => {
     
     const messageElement = screen.getByText('Información adicional');
     expect(messageElement).toBeInTheDocument();
-    expect(messageElement).toHaveClass('text-info');
+    // Check parent div for the info class
+    const parentDiv = messageElement.closest('div');
+    expect(parentDiv?.className).toContain('text-info');
   });
 
   it('should not render when message is empty', () => {

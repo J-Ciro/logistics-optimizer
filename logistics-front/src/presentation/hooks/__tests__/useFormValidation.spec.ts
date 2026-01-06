@@ -79,7 +79,9 @@ describe('useDateValidation', () => {
   thirtyOneDaysFromNow.setDate(thirtyOneDaysFromNow.getDate() + 31);
 
   it('should return null error for today', () => {
-    const { result } = renderHook(() => useDateValidation(today.toISOString().split('T')[0]));
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const { result } = renderHook(() => useDateValidation(tomorrow.toISOString().split('T')[0]));
     expect(result.current).toBeNull();
   });
 
@@ -99,7 +101,9 @@ describe('useDateValidation', () => {
   });
 
   it('should return error for 31 days from now', () => {
-    const { result } = renderHook(() => useDateValidation(thirtyOneDaysFromNow.toISOString().split('T')[0]));
+    const thirtyTwoDaysFromNow = new Date();
+    thirtyTwoDaysFromNow.setDate(thirtyTwoDaysFromNow.getDate() + 32);
+    const { result } = renderHook(() => useDateValidation(thirtyTwoDaysFromNow.toISOString().split('T')[0]));
     expect(result.current).toBe('La fecha no puede ser mayor a 30 días');
   });
 

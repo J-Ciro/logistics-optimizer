@@ -17,7 +17,7 @@ const getProviderLogo = (providerId: string) => {
   
   if (lowerProviderId.includes('dhl')) {
     return (
-      <div className="size-16 rounded-lg bg-white p-2 flex items-center justify-center flex-shrink-0 border border-border-light">
+      <div className="size-16 rounded-lg bg-white p-2 flex items-center justify-center flex-shrink-0 border border-border-light ">
         <img 
           src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB82sGJRkCPxGE42o_z3KQKXYjsmp4b9yQVQ&s" 
           alt="DHL Logo" 

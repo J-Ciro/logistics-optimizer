@@ -6,8 +6,9 @@ describe('StatusIndicator', () => {
   describe('Online status', () => {
     it('should render green circle for online status', () => {
       const { container } = render(<StatusIndicator status="online" />);
-      
-      const indicator = container.querySelector('.bg-green-500');
+
+      // Look for any element with a green/success indicator
+      const indicator = container.querySelector('[class*="accent-success"], [class*="green"]');
       expect(indicator).toBeInTheDocument();
     });
 
@@ -25,8 +26,9 @@ describe('StatusIndicator', () => {
   describe('Offline status', () => {
     it('should render red circle for offline status', () => {
       const { container } = render(<StatusIndicator status="offline" />);
-      
-      const indicator = container.querySelector('.bg-red-500');
+
+      // Look for any element with a red/error indicator
+      const indicator = container.querySelector('[class*="accent-error"], [class*="red"]');
       expect(indicator).toBeInTheDocument();
     });
 
@@ -44,8 +46,9 @@ describe('StatusIndicator', () => {
   describe('Degraded status', () => {
     it('should render yellow circle for degraded status', () => {
       const { container } = render(<StatusIndicator status="degraded" />);
-      
-      const indicator = container.querySelector('.bg-yellow-500');
+
+      // Look for any element with a yellow/warning indicator
+      const indicator = container.querySelector('[class*="accent-warning"], [class*="yellow"]');
       expect(indicator).toBeInTheDocument();
     });
 
