@@ -31,8 +31,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: './logistics-back/package-lock.json'
+      
+      - name: 📦 Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ./logistics-back/node_modules
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-backend-${{ hashFiles('logistics-back/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ matrix.node-version }}-backend-
+            ${{ runner.os }}-node-${{ matrix.node-version }}-
       
       - name: 📦 Install dependencies
         run: npm ci
@@ -84,8 +93,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: './logistics-front/package-lock.json'
+      
+      - name: 📦 Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ./logistics-front/node_modules
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-frontend-${{ hashFiles('logistics-front/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ matrix.node-version }}-frontend-
+            ${{ runner.os }}-node-${{ matrix.node-version }}-
       
       - name: 📦 Install dependencies
         run: npm ci
