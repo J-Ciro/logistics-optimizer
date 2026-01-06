@@ -1,5 +1,5 @@
-import { IQuoteRequest } from '../domain/models/QuoteRequest';
-import { IQuoteResponse } from '../domain/models/Quote';
+import type { IQuoteRequest } from '../domain/models/QuoteRequest';
+import type { IQuoteResponse } from '../domain/models/Quote';
 
 const API_BASE_URL = 'http://localhost:3000';
 
