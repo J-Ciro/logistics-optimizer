@@ -1,4 +1,5 @@
 import type { IQuote, IProviderMessage } from '../../domain/models/Quote';
+import { OfflineProviderMessage } from './OfflineProviderMessage';
 
 interface QuoteResultsListProps {
   quotes: IQuote[];
@@ -146,16 +147,14 @@ export const QuoteResultsList = ({ quotes, messages }: QuoteResultsListProps) =>
 
       {/* Offline Provider Messages */}
       {messages && messages.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-text-dark text-lg font-bold mb-3">Avisos</h3>
+        <div className="mt-6 space-y-3">
+          <h3 className="text-text-dark text-lg font-bold">Avisos</h3>
           {messages.map((msg, index) => (
-            <div
+            <OfflineProviderMessage
               key={`${msg.provider}-${index}`}
-              className="bg-accent-warning/10 border border-accent-warning/30 rounded-lg p-4 mt-3 flex items-center gap-3"
-            >
-              <span className="material-symbols-outlined text-accent-warning text-xl">warning</span>
-              <span className="text-text-dark text-sm">{msg.message}</span>
-            </div>
+              providerName={msg.provider}
+              message={msg.message}
+            />
           ))}
         </div>
       )}
