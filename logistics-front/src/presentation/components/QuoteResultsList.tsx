@@ -1,3 +1,9 @@
+//HUMAN COMMENT Start
+
+
+//HUMAN COMMENT End
+
+
 import type { IQuote, IProviderMessage } from '../../domain/models/Quote';
 import { OfflineProviderMessage } from './OfflineProviderMessage';
 
@@ -7,52 +13,57 @@ interface QuoteResultsListProps {
 }
 
 const getProviderLogo = (providerId: string) => {
-  switch (providerId.toLowerCase()) {
-    case 'dhl':
-      return (
-        <div className="size-16 rounded-lg bg-[#FFCC00] p-1 flex items-center justify-center flex-shrink-0">
-          <span className="text-[#D40511] font-black text-xl italic tracking-tighter" style={{ fontFamily: "'Arial Black', sans-serif" }}>
-            DHL
-          </span>
-        </div>
-      );
-    case 'fedex':
-      return (
-        <div className="size-16 rounded-lg bg-card-light flex items-center justify-center flex-shrink-0 overflow-hidden border border-border-light">
-          <div className="flex h-full w-full">
-            <div className="w-1/2 h-full bg-[#4D148C] flex items-center justify-center text-white font-bold text-xs">Fed</div>
-            <div className="w-1/2 h-full bg-[#FF6600] flex items-center justify-center text-white font-bold text-xs">Ex</div>
-          </div>
-        </div>
-      );
-    case 'local':
-      return (
-        <div className="size-16 rounded-lg bg-background-light p-2 flex items-center justify-center flex-shrink-0 border border-border-light">
-          <div className="w-full h-full bg-text-dark rounded-md flex items-center justify-center">
-            <span className="text-white font-black italic tracking-tighter">GO</span>
-          </div>
-        </div>
-      );
-    default:
-      return (
-        <div className="size-16 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-          <span className="material-symbols-outlined text-primary" style={{ fontSize: '32px' }}>
-            local_shipping
-          </span>
-        </div>
-      );
+  const lowerProviderId = providerId.toLowerCase();
+  
+  if (lowerProviderId.includes('dhl')) {
+    return (
+      <div className="size-16 rounded-lg bg-white p-2 flex items-center justify-center flex-shrink-0 border border-border-light">
+        <img 
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB82sGJRkCPxGE42o_z3KQKXYjsmp4b9yQVQ&s" 
+          alt="DHL Logo" 
+          className="w-full h-full object-contain"
+        />
+      </div>
+    );
   }
+  
+  if (lowerProviderId.includes('fedex')) {
+    return (
+      <div className="size-16 rounded-lg bg-white p-2 flex items-center justify-center flex-shrink-0 border border-border-light">
+        <img 
+          src="https://logos-world.net/wp-content/uploads/2020/04/FedEx-Logo.png" 
+          alt="FedEx Logo" 
+          className="w-full h-full object-contain"
+        />
+      </div>
+    );
+  }
+  
+  if (lowerProviderId.includes('local')) {
+    return (
+      <div className="size-16 rounded-lg bg-background-light p-2 flex items-center justify-center flex-shrink-0 border border-border-light">
+        <div className="w-full h-full bg-text-dark rounded-md flex items-center justify-center">
+          <span className="text-white font-black italic tracking-tighter">GO</span>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="size-16 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+      <span className="material-symbols-outlined text-primary" style={{ fontSize: '32px' }}>
+        local_shipping
+      </span>
+    </div>
+  );
 };
 
 const getProviderColor = (providerId: string) => {
-  switch (providerId.toLowerCase()) {
-    case 'dhl':
-      return 'bg-accent-info';
-    case 'local':
-      return 'bg-accent-success';
-    default:
-      return 'bg-accent-purple';
-  }
+  const lowerProviderId = providerId.toLowerCase();
+  
+  if (lowerProviderId.includes('dhl')) return 'bg-accent-info';
+  if (lowerProviderId.includes('local')) return 'bg-accent-success';
+  return 'bg-accent-purple';
 };
 
 export const QuoteResultsList = ({ quotes, messages }: QuoteResultsListProps) => {
