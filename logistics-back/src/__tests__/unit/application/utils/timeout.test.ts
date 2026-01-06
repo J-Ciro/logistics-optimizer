@@ -25,8 +25,8 @@ describe('withTimeout', () => {
     await expect(withTimeout(failingPromise, 1000)).rejects.toThrow('Network error');
   });
 
-  it('should handle timeout of 0ms', async () => {
-    const promise = Promise.resolve('instant');
+  it('should handle timeout of 0ms with slow promise', async () => {
+    const promise = new Promise(resolve => setTimeout(() => resolve('too late'), 100));
 
     await expect(withTimeout(promise, 0)).rejects.toThrow('Operation timed out after 0ms');
   });

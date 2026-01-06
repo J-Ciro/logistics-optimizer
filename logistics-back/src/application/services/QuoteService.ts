@@ -86,9 +86,8 @@ export class QuoteService {
    * Get provider name by index (helper method)
    */
   private getProviderName(index: number): string {
-    // This is a temporary solution. In production, providers should have a name property
-    const providerNames = ['FedEx', 'DHL', 'Local'];
-    return providerNames[index] || `Provider ${index + 1}`;
+    // Use generic provider name since we can't reliably get the name when adapter fails
+    return `Provider ${index + 1}`;
   }
 
   /**
