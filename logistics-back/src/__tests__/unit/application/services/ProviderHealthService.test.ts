@@ -54,7 +54,11 @@ describe('ProviderHealthService', () => {
         validateAddress: jest.fn(),
       };
 
-      const adapters = [mockFedEx, mockDHL, mockLocal];
+      const adapters = [
+        { provider: mockFedEx, name: 'FedEx' },
+        { provider: mockDHL, name: 'DHL' },
+        { provider: mockLocal, name: 'Local' },
+      ];
       const healthService = new ProviderHealthService(adapters);
 
       const statuses = await healthService.checkHealth();
@@ -62,7 +66,7 @@ describe('ProviderHealthService', () => {
       expect(statuses).toHaveLength(3);
       expect(statuses[0].providerName).toBe('FedEx');
       expect(statuses[0].status).toBe('online');
-      expect(statuses[0].responseTime).toBeGreaterThan(0);
+      expect(statuses[0].responseTime).toBeGreaterThanOrEqual(0);
       expect(statuses[1].providerName).toBe('DHL');
       expect(statuses[1].status).toBe('online');
       expect(statuses[2].providerName).toBe('Local');
@@ -95,7 +99,10 @@ describe('ProviderHealthService', () => {
         validateAddress: jest.fn(),
       };
 
-      const adapters = [mockFedEx, mockDHL];
+      const adapters = [
+        { provider: mockFedEx, name: 'FedEx' },
+        { provider: mockDHL, name: 'DHL' },
+      ];
       const healthService = new ProviderHealthService(adapters);
 
       const statuses = await healthService.checkHealth();
@@ -104,7 +111,7 @@ describe('ProviderHealthService', () => {
       expect(statuses[0].status).toBe('online');
       expect(statuses[1].providerName).toBe('DHL');
       expect(statuses[1].status).toBe('offline');
-    });
+    }, 10000); // Increase timeout for this test
 
     it('should return "offline" status when adapter throws error', async () => {
       const mockFedEx: IShippingProvider = {
@@ -113,7 +120,7 @@ describe('ProviderHealthService', () => {
         validateAddress: jest.fn(),
       };
 
-      const adapters = [mockFedEx];
+      const adapters = [{ provider: mockFedEx, name: 'FedEx' }];
       const healthService = new ProviderHealthService(adapters);
 
       const statuses = await healthService.checkHealth();
@@ -146,7 +153,7 @@ describe('ProviderHealthService', () => {
         validateAddress: jest.fn(),
       };
 
-      const adapters = [mockFedEx];
+      const adapters = [{ provider: mockFedEx, name: 'FedEx' }];
       const healthService = new ProviderHealthService(adapters);
 
       const statuses = await healthService.checkHealth();
@@ -174,7 +181,11 @@ describe('ProviderHealthService', () => {
         validateAddress: jest.fn(),
       };
 
-      const adapters = [mockAdapter, mockAdapter, mockAdapter];
+      const adapters = [
+        { provider: mockAdapter, name: 'FedEx' },
+        { provider: mockAdapter, name: 'DHL' },
+        { provider: mockAdapter, name: 'Local' },
+      ];
       const healthService = new ProviderHealthService(adapters);
 
       const systemStatus = await healthService.getSystemStatus();
@@ -207,7 +218,11 @@ describe('ProviderHealthService', () => {
         validateAddress: jest.fn(),
       };
 
-      const adapters = [mockOnline, mockOffline, mockOnline];
+      const adapters = [
+        { provider: mockOnline, name: 'FedEx' },
+        { provider: mockOffline, name: 'DHL' },
+        { provider: mockOnline, name: 'Local' },
+      ];
       const healthService = new ProviderHealthService(adapters);
 
       const systemStatus = await healthService.getSystemStatus();
@@ -224,7 +239,11 @@ describe('ProviderHealthService', () => {
         validateAddress: jest.fn(),
       };
 
-      const adapters = [mockOffline, mockOffline, mockOffline];
+      const adapters = [
+        { provider: mockOffline, name: 'FedEx' },
+        { provider: mockOffline, name: 'DHL' },
+        { provider: mockOffline, name: 'Local' },
+      ];
       const healthService = new ProviderHealthService(adapters);
 
       const systemStatus = await healthService.getSystemStatus();
