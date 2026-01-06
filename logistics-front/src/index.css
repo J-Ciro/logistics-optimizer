@@ -61,6 +61,19 @@
   @apply bg-accent-success text-white;
 }
 
+/* Validation message styles */
+.text-error {
+  @apply text-red-600;
+}
+
+.text-warning {
+  @apply text-orange-500;
+}
+
+.text-info {
+  @apply text-blue-500;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
