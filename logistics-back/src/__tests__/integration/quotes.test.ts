@@ -136,7 +136,7 @@ describe('POST /api/quotes - Integration Tests', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('Origin');
+      expect(response.body.error).toContain('origen');
     });
 
     it('should return 400 for missing destination', async () => {
@@ -153,7 +153,7 @@ describe('POST /api/quotes - Integration Tests', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('Destination');
+      expect(response.body.error).toContain('destino');
     });
 
     it('should return 400 for invalid weight (zero)', async () => {
@@ -171,7 +171,7 @@ describe('POST /api/quotes - Integration Tests', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('Weight');
+      expect(response.body.error).toContain('peso');
     });
 
     it('should return 400 for invalid weight (negative)', async () => {
@@ -188,7 +188,7 @@ describe('POST /api/quotes - Integration Tests', () => {
         });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toContain('Weight');
+      expect(response.body.error).toContain('peso');
     });
 
     it('should return 400 for weight exceeding maximum', async () => {
@@ -205,7 +205,7 @@ describe('POST /api/quotes - Integration Tests', () => {
         });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toContain('Weight');
+      expect(response.body.error).toContain('peso');
     });
 
     it('should return 400 for past pickup date', async () => {
@@ -222,7 +222,7 @@ describe('POST /api/quotes - Integration Tests', () => {
         });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toContain('date');
+      expect(response.body.error).toContain('fecha');
     });
 
     it('should return 400 for pickup date more than 30 days ahead', async () => {
@@ -239,7 +239,7 @@ describe('POST /api/quotes - Integration Tests', () => {
         });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toContain('date');
+      expect(response.body.error).toContain('fecha');
     });
   });
 

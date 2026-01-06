@@ -1,0 +1,30 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`OfflineProviderMessage > should match snapshot 1`] = `
+<div>
+  <div
+    class="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-300 rounded-lg text-yellow-800"
+    role="alert"
+  >
+    <span
+      class="text-xl flex-shrink-0"
+    >
+      ⚠️
+    </span>
+    <div
+      class="flex-1"
+    >
+      <p
+        class="font-semibold"
+      >
+        FedEx
+      </p>
+      <p
+        class="text-sm"
+      >
+        No disponible temporalmente
+      </p>
+    </div>
+  </div>
+</div>
+`;
