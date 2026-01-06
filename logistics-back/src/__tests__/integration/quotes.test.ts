@@ -1,11 +1,12 @@
 import request from 'supertest';
 import express, { Express } from 'express';
-import { QuoteController } from '../../../infrastructure/controllers/QuoteController';
-import { QuoteService } from '../../../application/services/QuoteService';
-import { BadgeService } from '../../../application/services/BadgeService';
-import { FedExAdapter } from '../../../infrastructure/adapters/FedExAdapter';
-import { DHLAdapter } from '../../../infrastructure/adapters/DHLAdapter';
-import { LocalAdapter } from '../../../infrastructure/adapters/LocalAdapter';
+import { QuoteController } from '../../infrastructure/controllers/QuoteController';
+import { QuoteService } from '../../application/services/QuoteService';
+import { BadgeService } from '../../application/services/BadgeService';
+import { FedExAdapter } from '../../infrastructure/adapters/FedExAdapter';
+import { DHLAdapter } from '../../infrastructure/adapters/DHLAdapter';
+import { LocalAdapter } from '../../infrastructure/adapters/LocalAdapter';  
+
 
 describe.skip('POST /api/quotes - Integration Tests', () => {
   let app: Express;
