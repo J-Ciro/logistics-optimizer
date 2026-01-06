@@ -1,17 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useProviderStatus } from '../useProviderStatus';
 
 describe('useProviderStatus', () => {
-  const defaultMockResponse = {
-    systemStatus: 'offline',
-    providers: []
-  };
-
   beforeEach(() => {
     vi.clearAllMocks();
     // Set up a default fetch mock that never resolves (tests should override)
-    global.fetch = vi.fn(() => new Promise(() => {})) as any;
+    global.fetch = vi.fn(() => new Promise(() => {})) as typeof fetch;
   });
 
   afterEach(() => {
@@ -59,7 +54,7 @@ describe('useProviderStatus', () => {
     };
 
     let fetchCallCount = 0;
-    (global.fetch as any).mockImplementation(async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(async () => {
       fetchCallCount++;
       return {
         ok: true,
@@ -109,7 +104,7 @@ describe('useProviderStatus', () => {
     };
 
     let fetchCallCount = 0;
-    (global.fetch as any).mockImplementation(async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(async () => {
       fetchCallCount++;
       return {
         ok: true,

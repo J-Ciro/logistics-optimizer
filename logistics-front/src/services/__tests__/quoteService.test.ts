@@ -30,7 +30,7 @@ describe('quoteService', () => {
         messages: [],
       };
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => mockResponse,
@@ -58,7 +58,7 @@ describe('quoteService', () => {
     });
 
     it('should handle 400 validation error response', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
         status: 400,
         json: async () => ({ error: 'Weight must be > 0.1 kg' }),
@@ -76,7 +76,7 @@ describe('quoteService', () => {
     });
 
     it('should handle 503 service unavailable response', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
         status: 503,
         json: async () => ({
@@ -97,7 +97,7 @@ describe('quoteService', () => {
     });
 
     it('should handle network errors', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network error'));
 
       const request: IQuoteRequest = {
         origin: 'New York, NY',
@@ -134,7 +134,7 @@ describe('quoteService', () => {
         ],
       };
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => mockResponse,

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { ProviderStatusWidget } from '../ProviderStatusWidget';
 
 // Mock the useProviderStatus hook
@@ -11,7 +11,7 @@ import { useProviderStatus } from '../../hooks/useProviderStatus';
 
 describe('ProviderStatusWidget', () => {
   it('should display "Sistema: EN LÍNEA" when all providers online', async () => {
-    (useProviderStatus as any).mockReturnValue({
+    (useProviderStatus as ReturnType<typeof vi.fn>).mockReturnValue({
       status: {
         systemStatus: 'online',
         activeProviders: 3,
@@ -36,7 +36,7 @@ describe('ProviderStatusWidget', () => {
   });
 
   it('should display "3/3 Proveedores Activos" when all online', () => {
-    (useProviderStatus as any).mockReturnValue({
+    (useProviderStatus as ReturnType<typeof vi.fn>).mockReturnValue({
       status: {
         systemStatus: 'online',
         activeProviders: 3,
@@ -54,7 +54,7 @@ describe('ProviderStatusWidget', () => {
   });
 
   it('should display "Sistema: DEGRADADO" when one provider offline', async () => {
-    (useProviderStatus as any).mockReturnValue({
+    (useProviderStatus as ReturnType<typeof vi.fn>).mockReturnValue({
       status: {
         systemStatus: 'degraded',
         activeProviders: 2,
@@ -78,7 +78,7 @@ describe('ProviderStatusWidget', () => {
   });
 
   it('should display provider table with status and response time', () => {
-    (useProviderStatus as any).mockReturnValue({
+    (useProviderStatus as ReturnType<typeof vi.fn>).mockReturnValue({
       status: {
         systemStatus: 'online',
         activeProviders: 3,
@@ -105,7 +105,7 @@ describe('ProviderStatusWidget', () => {
   });
 
   it('should show loading state', () => {
-    (useProviderStatus as any).mockReturnValue({
+    (useProviderStatus as ReturnType<typeof vi.fn>).mockReturnValue({
       status: null,
       loading: true,
       error: null,
@@ -117,7 +117,7 @@ describe('ProviderStatusWidget', () => {
   });
 
   it('should show error state', () => {
-    (useProviderStatus as any).mockReturnValue({
+    (useProviderStatus as ReturnType<typeof vi.fn>).mockReturnValue({
       status: null,
       loading: false,
       error: 'Network error',
@@ -129,7 +129,7 @@ describe('ProviderStatusWidget', () => {
   });
 
   it('should display warning icon when system is degraded', () => {
-    (useProviderStatus as any).mockReturnValue({
+    (useProviderStatus as ReturnType<typeof vi.fn>).mockReturnValue({
       status: {
         systemStatus: 'degraded',
         activeProviders: 2,
