@@ -13,22 +13,20 @@ describe('ProviderStatusWidget', () => {
   it('should display "Sistema: EN LÍNEA" when all providers online', async () => {
     (useProviderStatus as ReturnType<typeof vi.fn>).mockReturnValue({
       status: {
-        systemStatus: 'online',
-        activeProviders: 3,
-        totalProviders: 3,
+        status: 'online',
         providers: [
           { providerName: 'DHL', status: 'online', responseTime: 120, lastCheck: '2026-01-06T10:00:00Z' },
           { providerName: 'FedEx', status: 'online', responseTime: 150, lastCheck: '2026-01-06T10:00:00Z' },
           { providerName: 'Local', status: 'online', responseTime: 80, lastCheck: '2026-01-06T10:00:00Z' },
         ],
-        lastUpdate: '2026-01-06T10:00:00Z',
+        timestamp: '2026-01-06T10:00:00Z',
       },
       loading: false,
       error: null,
     });
 
     render(<ProviderStatusWidget />);
-    
+
     // Check for the StatusIndicator showing "En Línea" - there are multiple so get all
     const statusTexts = await screen.findAllByText('En Línea');
     expect(statusTexts.length).toBeGreaterThan(0);
@@ -38,11 +36,13 @@ describe('ProviderStatusWidget', () => {
   it('should display "3/3 Proveedores Activos" when all online', () => {
     (useProviderStatus as ReturnType<typeof vi.fn>).mockReturnValue({
       status: {
-        systemStatus: 'online',
-        activeProviders: 3,
-        totalProviders: 3,
-        providers: [],
-        lastUpdate: '2026-01-06T10:00:00Z',
+        status: 'online',
+        providers: [
+          { providerName: 'DHL', status: 'online', responseTime: 120, lastCheck: '2026-01-06T10:00:00Z' },
+          { providerName: 'FedEx', status: 'online', responseTime: 150, lastCheck: '2026-01-06T10:00:00Z' },
+          { providerName: 'Local', status: 'online', responseTime: 80, lastCheck: '2026-01-06T10:00:00Z' },
+        ],
+        timestamp: '2026-01-06T10:00:00Z',
       },
       loading: false,
       error: null,
@@ -56,22 +56,20 @@ describe('ProviderStatusWidget', () => {
   it('should display "Sistema: DEGRADADO" when one provider offline', async () => {
     (useProviderStatus as ReturnType<typeof vi.fn>).mockReturnValue({
       status: {
-        systemStatus: 'degraded',
-        activeProviders: 2,
-        totalProviders: 3,
+        status: 'degraded',
         providers: [
           { providerName: 'DHL', status: 'online', responseTime: 120, lastCheck: '2026-01-06T10:00:00Z' },
           { providerName: 'FedEx', status: 'offline', responseTime: 0, lastCheck: '2026-01-06T10:00:00Z' },
           { providerName: 'Local', status: 'online', responseTime: 80, lastCheck: '2026-01-06T10:00:00Z' },
         ],
-        lastUpdate: '2026-01-06T10:00:00Z',
+        timestamp: '2026-01-06T10:00:00Z',
       },
       loading: false,
       error: null,
     });
 
     render(<ProviderStatusWidget />);
-    
+
     // Check for the StatusIndicator showing "Degradado"
     const statusText = await screen.findByText('Degradado');
     expect(statusText).toBeInTheDocument();
@@ -80,15 +78,13 @@ describe('ProviderStatusWidget', () => {
   it('should display provider table with status and response time', () => {
     (useProviderStatus as ReturnType<typeof vi.fn>).mockReturnValue({
       status: {
-        systemStatus: 'online',
-        activeProviders: 3,
-        totalProviders: 3,
+        status: 'online',
         providers: [
           { providerName: 'FedEx', status: 'online', responseTime: 420, lastCheck: '2026-01-06T10:00:00Z' },
           { providerName: 'DHL', status: 'online', responseTime: 580, lastCheck: '2026-01-06T10:00:00Z' },
           { providerName: 'Local', status: 'online', responseTime: 150, lastCheck: '2026-01-06T10:00:00Z' },
         ],
-        lastUpdate: '2026-01-06T10:00:00Z',
+        timestamp: '2026-01-06T10:00:00Z',
       },
       loading: false,
       error: null,
@@ -131,11 +127,13 @@ describe('ProviderStatusWidget', () => {
   it('should display warning icon when system is degraded', () => {
     (useProviderStatus as ReturnType<typeof vi.fn>).mockReturnValue({
       status: {
-        systemStatus: 'degraded',
-        activeProviders: 2,
-        totalProviders: 3,
-        providers: [],
-        lastUpdate: '2026-01-06T10:00:00Z',
+        status: 'degraded',
+        providers: [
+          { providerName: 'DHL', status: 'online', responseTime: 120, lastCheck: '2026-01-06T10:00:00Z' },
+          { providerName: 'FedEx', status: 'offline', responseTime: 0, lastCheck: '2026-01-06T10:00:00Z' },
+          { providerName: 'Local', status: 'online', responseTime: 80, lastCheck: '2026-01-06T10:00:00Z' },
+        ],
+        timestamp: '2026-01-06T10:00:00Z',
       },
       loading: false,
       error: null,
