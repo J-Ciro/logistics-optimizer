@@ -1,10 +1,17 @@
 // ProviderStatusWidget component for HU-04 system health display
 
+import { useMemo } from 'react';
 import { useProviderStatus } from '../hooks/useProviderStatus';
+import { ProviderStatusAdapter } from '../../infrastructure/adapters/ProviderStatusAdapter';
 import { StatusIndicator } from './StatusIndicator';
 
 export function ProviderStatusWidget() {
   const { status, loading, error } = useProviderStatus();
+
+  // Calculate metrics from status using adapter
+  const metrics = useMemo(() => {
+    return status ? ProviderStatusAdapter.toMetrics(status) : null;
+  }, [status]);
 
   if (loading) {
     return (
@@ -22,7 +29,7 @@ export function ProviderStatusWidget() {
     );
   }
 
-  if (!status) {
+  if (!status || !metrics) {
     return null;
   }
 
@@ -32,10 +39,10 @@ export function ProviderStatusWidget() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h3 className="text-lg font-semibold text-text-dark">Sistema:</h3>
-          <StatusIndicator status={status.systemStatus} />
+          <StatusIndicator status={metrics.systemStatus} />
         </div>
         <div className="text-sm text-text-muted">
-          {status.activeProviders}/{status.totalProviders} Proveedores Activos
+          {metrics.activeProviders}/{metrics.totalProviders} Proveedores Activos
         </div>
       </div>
 
@@ -67,7 +74,7 @@ export function ProviderStatusWidget() {
 
       {/* Last Update */}
       <div className="text-xs text-text-muted text-right">
-        Última actualización: {new Date(status.lastUpdate).toLocaleTimeString('es-ES')}
+        Última actualización: {new Date(status.timestamp).toLocaleTimeString('es-ES')}
       </div>
     </div>
   );

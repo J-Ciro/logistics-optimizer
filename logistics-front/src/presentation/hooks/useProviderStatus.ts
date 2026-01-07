@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { ISystemStatus } from '../../domain/models/ProviderStatus';
+import { ProviderStatusAdapter } from '../../infrastructure/adapters/ProviderStatusAdapter';
+import { API } from '../../domain/constants';
 
 interface UseProviderStatusReturn {
   status: ISystemStatus | null;
@@ -7,6 +9,10 @@ interface UseProviderStatusReturn {
   error: string | null;
 }
 
+/**
+ * Hook to fetch and manage provider status
+ * Uses adapter to convert API response to domain model
+ */
 export function useProviderStatus(): UseProviderStatusReturn {
   const [status, setStatus] = useState<ISystemStatus | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -15,13 +21,15 @@ export function useProviderStatus(): UseProviderStatusReturn {
   const fetchStatus = async () => {
     try {
       const response = await fetch('/api/adapters/status');
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      setStatus(data);
+      // Use adapter to convert API response to domain model
+      const adaptedStatus = ProviderStatusAdapter.fromApiResponse(data);
+      setStatus(adaptedStatus);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -34,10 +42,10 @@ export function useProviderStatus(): UseProviderStatusReturn {
     // Fetch on mount
     fetchStatus();
 
-    // Setup auto-refresh every 30 seconds
+    // Setup auto-refresh
     const intervalId = setInterval(() => {
       fetchStatus();
-    }, 30000);
+    }, API.REFRESH_INTERVAL);
 
     // Cleanup interval on unmount
     return () => {
