@@ -72,32 +72,24 @@ jobs:
           # Install jq for JSON parsing
           sudo apt-get update && sudo apt-get install -y jq bc
           
-          # Check if coverage file exists
-          if [ ! -f coverage/coverage-final.json ]; then
-            echo "⚠️ No coverage report found at coverage/coverage-final.json"
-            echo "Looking for alternative coverage files..."
-            ls -la coverage/ || echo "No coverage directory found"
-            exit 1
-          fi
+          echo "Looking for coverage files..."
+          ls -la coverage/
           
-          # Calculate total coverage from coverage-final.json
-          TOTAL_LINES=$(jq '[.[] | .l | to_entries | .[] | .value] | add' coverage/coverage-final.json)
-          COVERED_LINES=$(jq '[.[] | .l | to_entries | .[] | select(.value > 0) | .value] | length' coverage/coverage-final.json)
-          
-          if [ "$TOTAL_LINES" -eq 0 ]; then
-            echo "❌ No lines found in coverage report"
-            exit 1
-          fi
-          
-          COVERAGE=$(echo "scale=2; ($COVERED_LINES / $TOTAL_LINES) * 100" | bc)
-          echo "Backend Coverage: ${COVERAGE}%"
-          echo "Covered Lines: $COVERED_LINES / $TOTAL_LINES"
-          
-          if (( $(echo "$COVERAGE < 70" | bc -l) )); then
-            echo "❌ Backend coverage is below 70%: ${COVERAGE}%"
-            exit 1
+          # Check for coverage-summary.json first (Jest generates this)
+          if [ -f coverage/coverage-summary.json ]; then
+            echo "✅ Found coverage-summary.json"
+            COVERAGE=$(jq -r '.total.lines.pct' coverage/coverage-summary.json)
+            echo "Backend Coverage: ${COVERAGE}%"
+            
+            if (( $(echo "$COVERAGE < 70" | bc -l) )); then
+              echo "❌ Backend coverage is below 70%: ${COVERAGE}%"
+              exit 1
+            else
+              echo "✅ Backend coverage meets threshold: ${COVERAGE}%"
+            fi
           else
-            echo "✅ Backend coverage meets threshold: ${COVERAGE}%"
+            echo "❌ No coverage-summary.json found"
+            exit 1
           fi
 
   frontend:
@@ -164,34 +156,25 @@ jobs:
           # Install jq for JSON parsing
           sudo apt-get update && sudo apt-get install -y jq bc
           
-          # Check for coverage files
           echo "Looking for coverage files..."
-          ls -la coverage/ || echo "No coverage directory found"
+          ls -la coverage/
           
-          # Try to find coverage data in different formats
+          # Check for coverage-summary.json (Vitest can generate this with json-summary reporter)
           if [ -f coverage/coverage-summary.json ]; then
-            echo "Found coverage-summary.json"
+            echo "✅ Found coverage-summary.json"
             COVERAGE=$(jq -r '.total.lines.pct' coverage/coverage-summary.json)
-          elif [ -f coverage/coverage-final.json ]; then
-            echo "Found coverage-final.json, calculating coverage..."
-            # Calculate coverage from coverage-final.json
-            TOTAL_LINES=$(jq '[.[] | .statementMap | length] | add' coverage/coverage-final.json)
-            COVERED_LINES=$(jq '[.[] | .s | to_entries | .[] | select(.value > 0)] | length' coverage/coverage-final.json)
-            COVERAGE=$(echo "scale=2; ($COVERED_LINES / $TOTAL_LINES) * 100" | bc)
+            echo "Frontend Coverage: ${COVERAGE}%"
+            
+            if (( $(echo "$COVERAGE < 70" | bc -l) )); then
+              echo "❌ Frontend coverage is below 70%: ${COVERAGE}%"
+              exit 1
+            else
+              echo "✅ Frontend coverage meets threshold: ${COVERAGE}%"
+            fi
           else
-            echo "⚠️ No coverage report found"
-            echo "Available files in coverage directory:"
-            find coverage -type f 2>/dev/null || echo "No coverage directory"
+            echo "❌ No coverage-summary.json found"
+            echo "Please update vitest.config.ts to include 'json-summary' in coverage reporters"
             exit 1
-          fi
-          
-          echo "Frontend Coverage: ${COVERAGE}%"
-          
-          if (( $(echo "$COVERAGE < 70" | bc -l) )); then
-            echo "❌ Frontend coverage is below 70%: ${COVERAGE}%"
-            exit 1
-          else
-            echo "✅ Frontend coverage meets threshold: ${COVERAGE}%"
           fi
 
   ci-success:
