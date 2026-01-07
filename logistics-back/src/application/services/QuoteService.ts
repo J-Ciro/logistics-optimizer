@@ -1,3 +1,14 @@
+//HUMAN REVIEW
+/**
+ * Coordina la solicitud de cotizaciones de multiples proveedores en paralelo,
+ * Ademas maneja time outs de 5 segundos para la Graceful Degradation (si un proveedor falla, no afecta la respuesta general)
+ * Ademas aplica un sobre cargo de 15% para paquetes fragiles, integra el Servicio de "badge" para marcar la cotizacion mas barata y mas rapida
+ * Y finalmente implementa cache con MongoDB de TTL (Time to live) de 5 minutos para optimizar el rendimiento.
+ */
+
+
+
+
 import { IShippingProvider } from '../../domain/interfaces/IShippingProvider';
 import { Quote } from '../../domain/entities/Quote';
 import { QuoteRequest } from '../../domain/entities/QuoteRequest';
