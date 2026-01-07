@@ -1,4 +1,4 @@
-import { ZoneConfig, ZoneType } from './ZoneConfig';
+import { ZoneConfig, ZoneType } from '../../domain/entities/ZoneConfig';
 
 describe('ZoneConfig Colombia - RED Phase (Tests First)', () => {
   describe('Zone Lookup', () => {
