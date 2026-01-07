@@ -7,6 +7,7 @@ import { DHLAdapter } from '../adapters/DHLAdapter';
 import { LocalAdapter } from '../adapters/LocalAdapter';
 import { QuoteRepository } from '../database/repositories/QuoteRepository';
 import { MongoDBConnection } from '../database/connection';
+import { validateQuoteRequest } from '../middlewares/validateQuoteRequest';
 
 // Initialize dependencies
 const fedexAdapter = new FedExAdapter();
@@ -33,7 +34,8 @@ const quoteController = new QuoteController(quoteService, badgeService);
 const router = Router();
 
 // POST /api/quotes - Request shipping quotes
-router.post('/quotes', (req: Request, res: Response) => {
+// Apply validation middleware before controller (Task 2.4 from HU-02)
+router.post('/quotes', validateQuoteRequest, (req: Request, res: Response) => {
   quoteController.requestQuotes(req, res);
 });
 
