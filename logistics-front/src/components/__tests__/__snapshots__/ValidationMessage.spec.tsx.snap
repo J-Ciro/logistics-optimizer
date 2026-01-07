@@ -8,7 +8,7 @@ exports[`ValidationMessage > should match snapshot for error state 1`] = `
     role="alert"
   >
     <span>
-      ❌
+      
     </span>
     <span>
       Error

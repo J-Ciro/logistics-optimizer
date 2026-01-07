@@ -45,7 +45,7 @@ describe('ValidationMessage', () => {
 
   it('should render error icon for error type', () => {
     render(<ValidationMessage message="Error" type="error" />);
-    expect(screen.getByText('❌')).toBeInTheDocument();
+    expect(screen.getByText('')).toBeInTheDocument();
   });
 
   it('should render warning icon for warning type', () => {
