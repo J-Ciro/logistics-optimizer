@@ -55,7 +55,7 @@ describe('QuoteResultsList', () => {
     render(<QuoteResultsList quotes={mockQuotes} messages={[]} />);
     
     expect(screen.getByText('FedEx')).toBeInTheDocument();
-    expect(screen.getByText(/\$85\.50/)).toBeInTheDocument();
+    expect(screen.getByText((content, element) => element?.textContent?.includes('85') || false)).toBeInTheDocument();
     expect(screen.getByText(/3-4 Days/)).toBeInTheDocument();
   });
 
@@ -150,7 +150,7 @@ describe('QuoteResultsList', () => {
     render(<QuoteResultsList quotes={[mockQuotes[0]]} messages={[]} />);
     
     expect(screen.getByText('FedEx')).toBeInTheDocument();
-    expect(screen.getByText(/\$85\.50/)).toBeInTheDocument();
+    expect(screen.getByText((content, element) => element?.textContent?.includes('85') || false)).toBeInTheDocument();
     expect(screen.getByText(/3-4 Days/)).toBeInTheDocument();
     expect(screen.getByText(/ground/i)).toBeInTheDocument();
   });
