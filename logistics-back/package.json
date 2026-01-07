@@ -10,7 +10,9 @@
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
     "dev": "tsx watch src/index.ts",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test:api": "newman run ../postman/postman_collection.json -e ../postman/postman_environment.json --reporters cli,html --reporter-html-export newman-report.html",
+    "test:api:ci": "newman run ../postman/postman_collection.json -e ../postman/postman_environment.json --reporters cli,json --reporter-json-export test-results.json"
   },
   "keywords": [
     "logistics",

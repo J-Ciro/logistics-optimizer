@@ -4,11 +4,15 @@
 - **Backend:** Express.js + TypeScript
 - **Frontend:** React + TypeScript + Vite
 - **Database:** MongoDB + Mongoose ODM
-- **Pattern:** Adapter Pattern (multi-provider shipping support) + Repository Pattern (data persistence)
+- **Patterns:** 
+  - **Template Method Pattern** (multi-provider shipping with shared validation logic)
+  - **Repository Pattern** (data persistence abstraction)
 
 ---
 
-## Adapter Pattern Implementation
+## Template Method Pattern Implementation
+
+The system uses the **Template Method Pattern** to define a skeleton algorithm in the base class (`BaseShippingAdapter`) while allowing subclasses to override specific steps without changing the algorithm's structure.
 
 ### Class Diagram
 ```mermaid
@@ -16,45 +20,54 @@ classDiagram
     class IShippingProvider {
         <<interface>>
         +calculateShipping(weight, destination)*
-        +trackShipment(trackingId)*
-        +validateAddress(address)*
+    }
+
+    class BaseShippingAdapter {
+        <<abstract>>
+        #MIN_WEIGHT: number
+        #MAX_WEIGHT: number
+        #validateShippingRequest(weight, destination)
+        +calculateShipping(weight, destination)*
     }
 
     class FedExAdapter {
-        -apiKey: string
-        -baseUrl: string
+        -BASE_PRICE: number
+        -MIN_DELIVERY_DAYS: number
+        -MAX_DELIVERY_DAYS: number
         +calculateShipping(weight, destination)
-        +trackShipment(trackingId)
-        +validateAddress(address)
     }
 
     class DHLAdapter {
-        -credentials: Auth
-        -endpoint: string
+        -BASE_PRICE: number
+        -MIN_DELIVERY_DAYS: number
         +calculateShipping(weight, destination)
-        +trackShipment(trackingId)
-        +validateAddress(address)
     }
 
     class LocalAdapter {
-        -rates: Map
+        -BASE_PRICE: number
+        -DELIVERY_DAYS: number
         +calculateShipping(weight, destination)
-        +trackShipment(trackingId)
-        +validateAddress(address)
     }
 
-    class ShippingService {
-        -provider: IShippingProvider
-        +setProvider(provider)
-        +getQuote(shipment)
-        +createShipment(details)
+    class QuoteService {
+        -providers: IShippingProvider[]
+        +getAllQuotes(request)
+        -assignBadges(quotes)
     }
 
-    IShippingProvider <|.. FedExAdapter
-    IShippingProvider <|.. DHLAdapter
-    IShippingProvider <|.. LocalAdapter
-    ShippingService --> IShippingProvider
+    IShippingProvider <|.. BaseShippingAdapter
+    BaseShippingAdapter <|-- FedExAdapter
+    BaseShippingAdapter <|-- DHLAdapter
+    BaseShippingAdapter <|-- LocalAdapter
+    QuoteService --> IShippingProvider
 ```
+
+### Pattern Benefits
+
+1. **Code Reuse (DRY):** Common validation logic (`validateShippingRequest`) is implemented once in `BaseShippingAdapter`
+2. **Consistency:** All adapters follow the same validation rules (weight: 0.1-1000 kg, non-empty destination)
+3. **Extensibility:** New providers only need to implement `calculateShipping()` without duplicating validation
+4. **SOLID Compliance:** Single Responsibility (each adapter handles one provider), Open/Closed (extend BaseShippingAdapter without modifying it)
 
 ---
 
@@ -159,10 +172,12 @@ interface IShippingProvider {
 
 ## Key Principles
 
+- **Template Method Pattern:** `BaseShippingAdapter` defines common validation logic; subclasses implement provider-specific pricing
 - **Single Responsibility:** Each adapter handles one provider only
-- **Dependency Injection:** ShippingService receives provider via constructor
-- **Abstraction:** Controllers depend on interfaces, not implementations
-- **Repository Pattern:** Data access abstraction with `IQuoteRepository`, `IShipmentRepository`
+- **DRY (Don't Repeat Yourself):** Validation logic is centralized in the base class
+- **Dependency Injection:** `QuoteService` receives providers via constructor
+- **Abstraction:** Controllers depend on interfaces (`IShippingProvider`), not implementations
+- **Repository Pattern:** Data access abstraction with `IQuoteRepository`
 - **Separation of Concerns:** Domain ≠ Application ≠ Infrastructure
 - **Frontend Agnostic:** React consumes REST API via service layer
 
@@ -175,7 +190,8 @@ interface IShippingProvider {
 ---
 
 ## Extension Points
-- Add new shipping provider: Create new adapter implementing `IShippingProvider`
-- Add new domain entity: Define in `domain/entities/`, extend repository
-- Add new use case: Create in `application/use-cases/`, inject dependencies
+- **Add new shipping provider:** Extend `BaseShippingAdapter` and implement `calculateShipping()` method
+- **Add new domain entity:** Define in `domain/entities/`, create repository interface
+- **Add new validation rule:** Update `validateShippingRequest()` in `BaseShippingAdapter`
+- **Add new pricing tier:** Modify `WeightPricingCalculator` with new tier configuration
 

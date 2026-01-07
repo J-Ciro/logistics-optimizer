@@ -1,9 +1,9 @@
 # Copilot Instructions - Logistics Shipping Optimizer
 
 ## Project Overview
-Multi-provider shipping quote aggregator using Express (TypeScript) backend + React (TypeScript) frontend. Core design pattern: **Adapter Pattern** for swappable shipping providers (FedEx, DHL, Local).
+Multi-provider shipping quote aggregator using Express (TypeScript) backend + React (TypeScript) frontend. Core design patterns: **Template Method Pattern** for shipping providers (with `BaseShippingAdapter` providing shared validation) + **Repository Pattern** for data persistence.
 
-**Requirements:** SOLID principles, CI/CD pipeline, and 70%+ test coverage.
+**Requirements:** SOLID principles, TDD workflow, CI/CD pipeline, and 80%+ test coverage.
 
 ---
 
@@ -51,15 +51,25 @@ Multi-provider shipping quote aggregator using Express (TypeScript) backend + Re
 
 ## Architecture Essentials
 
-### Backend Structure (TypeScript Migration Required)
+### Backend Structure (Clean Architecture)
 ```
 logistics-back/src/
-├── domain/           # Entities & interfaces (IShippingProvider, Shipment)
-├── application/      # ShippingService, QuoteService
-├── infrastructure/   # FedExAdapter, DHLAdapter, LocalAdapter, controllers, routes
+├── domain/              # Entities & interfaces
+│   ├── entities/        # Quote, QuoteRequest, ZoneConfig
+│   ├── interfaces/      # IShippingProvider, IQuoteRepository
+│   └── exceptions/      # ValidationError
+├── application/         # Business logic
+│   ├── services/        # QuoteService, BadgeService, WeightPricingCalculator
+│   └── utils/           # timeout utilities
+├── infrastructure/      # External interfaces
+│   ├── adapters/        # BaseShippingAdapter (Template Method), FedExAdapter, DHLAdapter, LocalAdapter
+│   ├── controllers/     # QuoteController, HealthController
+│   ├── routes/          # quotes.routes, health.routes
+│   ├── middlewares/     # validateQuoteRequest
+│   └── database/        # MongoDB connection, models, repositories
 ```
 
-**Current State:** Express app uses vanilla JS (app.js) with minimal routes. **Migration needed:** Convert to TypeScript, implement domain/application/infrastructure layers per ARCHITECTURE.md.
+**Implementation Status:** ✅ Fully migrated to TypeScript with Clean Architecture + Template Method Pattern
 
 ### Frontend Structure
 ```
@@ -160,56 +170,91 @@ npm run test:integration  # Test POST /quotes, GET /adapters/status, DB operatio
 
 ---
 
-## Adapter Pattern Implementation
+## Template Method Pattern Implementation
 
-**SOLID Compliance:** Zero violations. Each adapter = Single Responsibility. `IShippingProvider` = Dependency Inversion.
+**SOLID Compliance:** Zero violations. Each adapter = Single Responsibility. Template Method = Open/Closed Principle.
 
 **When creating a new shipping provider adapter:**
 
-1. **Define Interface** (`src/domain/interfaces/IShippingProvider.ts`):
+1. **Extend Base Class** (`src/infrastructure/adapters/BaseShippingAdapter.ts`):
    ```typescript
-   interface IShippingProvider {
-     calculateShipping(weight: number, destination: string): Promise<Quote>;
-     trackShipment(trackingId: string): Promise<Tracking>;
-     validateAddress(address: string): Promise<boolean>;
+   export abstract class BaseShippingAdapter implements IShippingProvider {
+     protected readonly MIN_WEIGHT = 0.1;
+     protected readonly MAX_WEIGHT = 1000;
+     
+     // Template method: shared validation logic
+     protected validateShippingRequest(weight: number, destination: string): void {
+       if (weight < this.MIN_WEIGHT || weight > this.MAX_WEIGHT) {
+         throw new Error('Weight out of range');
+       }
+       if (!destination?.trim()) {
+         throw new Error('Destination is required');
+       }
+     }
+     
+     // Abstract method: must be implemented by subclasses
+     abstract calculateShipping(weight: number, destination: string): Promise<Quote>;
    }
    ```
 
-2. **Create Adapter** (`src/infrastructure/adapters/FedExAdapter.ts`):
-   - Implement `IShippingProvider` interface
-   - Handle timeouts (5s max per PRODUCT.md §6)
-   - Normalize raw API response to `Quote` entity (PRODUCT.md §2)
-   - **Test Coverage:** Write unit tests for mock API responses
-
-3. **Inject via Service** (`src/application/services/ShippingService.ts`):
+2. **Create Concrete Adapter** (`src/infrastructure/adapters/FedExAdapter.ts`):
    ```typescript
-   class ShippingService {
+   export class FedExAdapter extends BaseShippingAdapter {
+     async calculateShipping(weight: number, destination: string): Promise<Quote> {
+       // Step 1: Use base class validation (DRY principle)
+       this.validateShippingRequest(weight, destination);
+       
+       // Step 2: Provider-specific pricing logic
+       const zone = ZoneConfig.getZoneByDestination(destination);
+       const weightCost = WeightPricingCalculator.calculateCost(weight, tiers);
+       const price = BASE_PRICE + (weightCost * zoneMultiplier);
+       
+       // Step 3: Return normalized Quote entity
+       return new Quote({ providerId, price, currency: 'COP', ... });
+     }
+   }
+   ```
+
+3. **Inject via Service** (`src/application/services/QuoteService.ts`):
+   ```typescript
+   class QuoteService {
      constructor(private providers: IShippingProvider[]) {}
-     async getAllQuotes(request: QuoteRequest): Promise<Quote[]> {
-       // Parallel execution with Promise.allSettled()
+     async getQuotes(request: QuoteRequest): Promise<Quote[]> {
+       // Parallel execution with Promise.allSettled() + 5s timeout
+       const quotes = await this.fetchQuotesWithTimeout(providers);
+       return BadgeService.assignBadges(quotes); // isCheapest, isFastest
      }
    }
    ```
 
 4. **Controller Wiring** (`src/infrastructure/controllers/QuoteController.ts`):
-   - Instantiate adapters (FedEx, DHL, Local)
-   - Pass to `ShippingService` via constructor
+   - Instantiate adapters: `new FedExAdapter()`, `new DHLAdapter()`, `new LocalAdapter()`
+   - Pass to `QuoteService` via constructor
+   - Validate request with middleware (`validateQuoteRequest`)
    - Return standardized JSON (PRODUCT.md §2)
 
-**Reference:** [ARCHITECTURE.md - Adapter Pattern](ARCHITECTURE.md#adapter-pattern-implementation), [USER_STORIES.md](USER_STORIES.md) for acceptance criteria
+**Key Benefits:**
+- ✅ **DRY Principle:** Validation logic written once in `BaseShippingAdapter`
+- ✅ **Extensibility:** New providers extend base class, inherit validation automatically
+- ✅ **Testability:** Mock base class methods for unit tests
+
+**Reference:** [ARCHITECTURE.md - Template Method Pattern](ARCHITECTURE.md#template-method-pattern-implementation)
 
 ---
 
 ## Project-Specific Conventions
 
 ### Testing Requirements
-- **Unit Tests:** `__tests__/` folder structure (Jest for backend, Vitest for frontend)
-- **Coverage Target:** 70%+ for business logic (`QuoteService`, adapters, badge assignment)
+- **Unit Tests:** `__tests__/unit/` folder structure (Jest for backend, Vitest for frontend)
+- **Integration Tests:** `__tests__/integration/` for API endpoint testing
+- **Coverage Target:** 80%+ for business logic (`QuoteService`, `BadgeService`, adapters, `WeightPricingCalculator`)
 - **Edge Cases:** See [ARCHITECTURE.md - Data Contracts](ARCHITECTURE.md#data-contracts-typescript-interfaces) for validation rules (invalid weight, past date, provider timeout, empty address)
-- **Integration Tests:** Minimum 3 API tests:
-  1. POST `/api/quotes` → Happy path (3 providers online)
-  2. POST `/api/quotes` → Single adapter timeout (graceful degradation)
-  3. GET `/api/adapters/status` → Dashboard widget data
+- **API Integration Tests:** 
+  1. ✅ POST `/api/quotes` → Happy path (3 providers online)
+  2. ✅ POST `/api/quotes` → Validation errors (400 responses)
+  3. ✅ GET `/api/adapters/status` → Provider health check
+  4. ✅ POST `/api/quotes` → Error handling (graceful degradation)
+- **Postman Collection:** 80+ automated tests for manual/CI testing (see `/postman` directory)
 
 ### Business Logic
 - **Badge Assignment:** Single winner for `isCheapest` and `isFastest` (ties break to/DB down)
@@ -240,16 +285,17 @@ npm run test:integration  # Test POST /quotes, GET /adapters/status, DB operatio
 
 | Task | Command/Reference |
 |:---|:---|
-| Implement new adapter | Create `infrastructure/adapters/NewAdapter.ts` implementing `IShippingProvider`, add to `ShippingService` constructor |
-| Add MongoDB model | Create schema in `infrastructure/database/models/`, implement repository in `infrastructure/database/repositories/` |
-| Add API endpoint | Create controller in `infrastructure/controllers/`, route in `infrastructure/routes/`, wire in `main.ts` |
-| Update badge logic | Edit `application/services/QuoteService.ts` (cheapest/fastest calculation) |
-| Generate edge case tests | Use Copilot with prompt: "Generate Jest tests for validation rules in ARCHITECTURE.md" |
-| Create React form | Use Copilot: "Create React component for quote form with validation from PRODUCT.md §1" |
-| Setup GitHub Actions | Create `.github/workflows/ci.yml` with build + test steps |
-| Create feature branch | `git checkout -b feature/fedex-adapter` → PR to `develop` |
-| Write API integration test | Use Supertest: `request(app).post('/api/quotes').send({...}).expect(200)` |
-| Check test coverage | `npm run test:coverage` → Verify 70%+ in terminal output |
+| Implement new adapter | Extend `BaseShippingAdapter` in `infrastructure/adapters/NewAdapter.ts`, implement `calculateShipping()`, add to `QuoteService` |
+| Add validation rule | Update `validateShippingRequest()` in `BaseShippingAdapter.ts` (shared across all providers) |
+| Add pricing tier | Edit `WeightPricingCalculator.ts` → Add new tier configuration (e.g., `getNewProviderTiers()`) |
+| Add API endpoint | Create controller in `infrastructure/controllers/`, route in `infrastructure/routes/`, wire in `app.ts` |
+| Update badge logic | Edit `application/services/BadgeService.ts` (`assignBadges()` method) |
+| Add middleware | Create in `infrastructure/middlewares/`, apply in route definition |
+| Test with Postman | Import `/postman/postman_collection_fixed.json` + environment, run collection (80+ tests) |
+| Run Newman CLI | `npm run test:api` (HTML report) or `npm run test:api:ci` (JSON for CI/CD) |
+| Generate edge case tests | Use Copilot: "Generate Jest tests for BaseShippingAdapter validation edge cases" |
+| Write integration test | Use Supertest: `request(app).post('/api/quotes').send({...}).expect(200)` in `__tests__/integration/` |
+| Check test coverage | `npm run test:coverage` → Verify 80%+ in terminal output |
 
 ---
 
@@ -302,8 +348,10 @@ npm run test:integration  # Test POST /quotes, GET /adapters/status, DB operatio
 
 | Question | Decision | Rationale |
 |:---|:---|:---|
-| Adapter lifecycle? | **Instantiated per-request** | Simplifies testing; no shared state between requests |
-| Database strategy? | **MongoDB with Mongoose ODM** | Persistent storage for quote history, cache TTL with MongoDB TTL indexes |
+| Adapter lifecycle? | **Singleton instances** | Instantiated once in `QuoteService` constructor; no state between requests |
+| Validation strategy? | **Template Method in BaseShippingAdapter** | DRY principle; all adapters inherit common validation logic |
+| Database strategy? | **MongoDB with Mongoose ODM** | Persistent storage for quote history (currently optional - graceful degradation) |
 | Frontend routing? | **Unified dashboard (single page)** | Simplifies UI testing; all providers in one view |
 | Test framework? | **Jest (backend), Vitest (frontend)** | Best TypeScript support, coverage reports |
+| API testing? | **Postman + Newman** | 80+ automated tests; CI/CD integration via `npm run test:api:ci` |
 | CI/CD trigger? | **Push to `develop` or `main`** | Aligns with Gitflow workflow |

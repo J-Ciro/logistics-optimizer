@@ -1,0 +1,524 @@
+{
+  "info": {
+    "name": "Shipping Optimizer API - Test Collection",
+    "description": "Colección completa de pruebas automatizadas para el sistema de cotización de envíos. Incluye casos de prueba para validación, flujos exitosos, manejo de errores y edge cases.",
+    "schema": "https://schema.postman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "a1b2c3d4-e5f6-7a8b-9c0d-e1f2a3b4c5d6"
+  },
+  "item": [
+    {
+      "name": "1. Health Check",
+      "description": "Endpoints de verificación de salud del sistema",
+      "item": [
+        {
+          "name": "GET System Health - All Providers Online",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('timestamp', new Date().toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Content-Type es application/json', function () {",
+                  "    pm.response.to.have.header('Content-Type');",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});",
+                  "",
+                  "pm.test('Respuesta tiene estructura correcta', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('status');",
+                  "    pm.expect(response).to.have.property('activeCount');",
+                  "    pm.expect(response).to.have.property('totalCount');",
+                  "    pm.expect(response).to.have.property('providers');",
+                  "});",
+                  "",
+                  "pm.test('activeCount es número', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.activeCount).to.be.a('number');",
+                  "});",
+                  "",
+                  "pm.test('providers es un array', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.providers).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Cada provider tiene estructura correcta', function () {",
+                  "    const response = pm.response.json();",
+                  "    response.providers.forEach(provider => {",
+                  "        pm.expect(provider).to.have.property('providerName');",
+                  "        pm.expect(provider).to.have.property('status');",
+                  "        pm.expect(provider).to.have.property('responseTime');",
+                  "        pm.expect(provider).to.have.property('lastCheck');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('status es ONLINE, DEGRADED u OFFLINE', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(['ONLINE', 'DEGRADED', 'OFFLINE']).to.include(response.status);",
+                  "});",
+                  "",
+                  "pm.test('activeCount está entre 0 y 3', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.activeCount).to.be.at.least(0);",
+                  "    pm.expect(response.activeCount).to.be.at.most(3);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}{{apiPrefix}}/adapters/status",
+            "description": "Obtiene el estado de salud del sistema y todos los adaptadores de proveedores."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Quote Requests - Success Cases",
+      "description": "Casos exitosos de solicitud de cotizaciones",
+      "item": [
+        {
+          "name": "POST Quote - Valid Data (Bogotá to Medellín)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const weight = Math.random() * (100 - 1) + 1;",
+                  "pm.environment.set('randomWeight', weight.toFixed(2));",
+                  "",
+                  "const now = new Date();",
+                  "const randomDays = Math.floor(Math.random() * 29) + 1;",
+                  "const futureDate = new Date(now.getTime() + randomDays * 24 * 60 * 60 * 1000);",
+                  "const formattedDate = futureDate.toISOString().split('T')[0];",
+                  "pm.environment.set('randomDate', formattedDate);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Respuesta tiene quotes array', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('quotes');",
+                  "    pm.expect(response.quotes).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Hay 3 cotizaciones', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.quotes).to.have.lengthOf(3);",
+                  "});",
+                  "",
+                  "pm.test('Cada quote tiene estructura correcta', function () {",
+                  "    const response = pm.response.json();",
+                  "    response.quotes.forEach(quote => {",
+                  "        pm.expect(quote).to.have.property('providerId');",
+                  "        pm.expect(quote).to.have.property('providerName');",
+                  "        pm.expect(quote).to.have.property('price');",
+                  "        pm.expect(quote).to.have.property('currency');",
+                  "        pm.expect(quote).to.have.property('minDays');",
+                  "        pm.expect(quote).to.have.property('maxDays');",
+                  "        pm.expect(quote).to.have.property('isCheapest');",
+                  "        pm.expect(quote).to.have.property('isFastest');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Exactamente uno tiene isCheapest=true', function () {",
+                  "    const response = pm.response.json();",
+                  "    const cheapest = response.quotes.filter(q => q.isCheapest === true);",
+                  "    pm.expect(cheapest).to.have.lengthOf(1);",
+                  "});",
+                  "",
+                  "pm.test('Exactamente uno tiene isFastest=true', function () {",
+                  "    const response = pm.response.json();",
+                  "    const fastest = response.quotes.filter(q => q.isFastest === true);",
+                  "    pm.expect(fastest).to.have.lengthOf(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": \"Bogotá\",\n  \"destination\": \"Medellín\",\n  \"weight\": {{randomWeight}},\n  \"pickupDate\": \"{{randomDate}}\",\n  \"fragile\": false\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/quotes",
+            "description": "Solicita cotizaciones para un envío válido desde Bogotá a Medellín."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Quote - Fragile Package",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const weight = Math.random() * (50 - 1) + 1;",
+                  "pm.environment.set('randomWeight', weight.toFixed(2));",
+                  "",
+                  "const now = new Date();",
+                  "const randomDays = Math.floor(Math.random() * 29) + 1;",
+                  "const futureDate = new Date(now.getTime() + randomDays * 24 * 60 * 60 * 1000);",
+                  "const formattedDate = futureDate.toISOString().split('T')[0];",
+                  "pm.environment.set('randomDate', formattedDate);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Hay 3 cotizaciones', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.quotes).to.have.lengthOf(3);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": \"Bogotá\",\n  \"destination\": \"Medellín\",\n  \"weight\": {{randomWeight}},\n  \"pickupDate\": \"{{randomDate}}\",\n  \"fragile\": true\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/quotes",
+            "description": "Solicita cotizaciones para un paquete frágil."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Quote - Heavy Package (500kg)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('randomWeight', '500');",
+                  "",
+                  "const now = new Date();",
+                  "const randomDays = Math.floor(Math.random() * 29) + 1;",
+                  "const futureDate = new Date(now.getTime() + randomDays * 24 * 60 * 60 * 1000);",
+                  "const formattedDate = futureDate.toISOString().split('T')[0];",
+                  "pm.environment.set('randomDate', formattedDate);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Hay 3 cotizaciones', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.quotes).to.have.lengthOf(3);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": \"Bogotá\",\n  \"destination\": \"Cali\",\n  \"weight\": {{randomWeight}},\n  \"pickupDate\": \"{{randomDate}}\",\n  \"fragile\": false\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/quotes",
+            "description": "Solicita cotizaciones para un paquete de 500kg."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Quote Requests - Validation Errors",
+      "description": "Casos de validación que deben retornar error 400",
+      "item": [
+        {
+          "name": "POST Quote - Weight Below Minimum (0.05kg)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": \"Bogotá\",\n  \"destination\": \"Medellín\",\n  \"weight\": 0.05,\n  \"pickupDate\": \"2026-01-10\",\n  \"fragile\": false\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/quotes",
+            "description": "Intenta solicitar cotización con peso menor a 0.1kg. Debe retornar error 400."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Quote - Weight Above Maximum (1001kg)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": \"Bogotá\",\n  \"destination\": \"Medellín\",\n  \"weight\": 1001,\n  \"pickupDate\": \"2026-01-10\",\n  \"fragile\": false\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/quotes",
+            "description": "Intenta solicitar cotización con peso mayor a 1000kg. Debe retornar error 400."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Quote - Missing Origin Field",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"destination\": \"Medellín\",\n  \"weight\": 5.5,\n  \"pickupDate\": \"2026-01-10\",\n  \"fragile\": false\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/quotes",
+            "description": "Intenta solicitar cotización sin origen. Debe retornar error 400."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Quote - Missing Destination Field",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": \"Bogotá\",\n  \"weight\": 5.5,\n  \"pickupDate\": \"2026-01-10\",\n  \"fragile\": false\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/quotes",
+            "description": "Intenta solicitar cotización sin destino. Debe retornar error 400."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Edge Cases",
+      "description": "Casos extremos de los límites de validación",
+      "item": [
+        {
+          "name": "POST Quote - Edge: Minimum Weight (0.1kg)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('randomWeight', '0.1');",
+                  "",
+                  "const futureDate = new Date();",
+                  "futureDate.setDate(futureDate.getDate() + 5);",
+                  "const formattedDate = futureDate.toISOString().split('T')[0];",
+                  "pm.environment.set('randomDate', formattedDate);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Se retornan 3 cotizaciones', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.quotes).to.have.lengthOf(3);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": \"Bogotá\",\n  \"destination\": \"Medellín\",\n  \"weight\": {{randomWeight}},\n  \"pickupDate\": \"{{randomDate}}\",\n  \"fragile\": false\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/quotes",
+            "description": "Solicita cotización con peso en el límite mínimo (0.1kg)."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Quote - Edge: Maximum Weight (1000kg)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('randomWeight', '1000');",
+                  "",
+                  "const futureDate = new Date();",
+                  "futureDate.setDate(futureDate.getDate() + 5);",
+                  "const formattedDate = futureDate.toISOString().split('T')[0];",
+                  "pm.environment.set('randomDate', formattedDate);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Se retornan 3 cotizaciones', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.quotes).to.have.lengthOf(3);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": \"Bogotá\",\n  \"destination\": \"Cali\",\n  \"weight\": {{randomWeight}},\n  \"pickupDate\": \"{{randomDate}}\",\n  \"fragile\": false\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/quotes",
+            "description": "Solicita cotización con peso en el límite máximo (1000kg)."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "apiPrefix",
+      "value": "/api"
+    }
+  ]
+}
