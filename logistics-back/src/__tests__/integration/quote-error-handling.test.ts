@@ -28,8 +28,6 @@ describe('POST /api/quotes - Error Handling Integration Tests', () => {
             transportMode: 'Truck',
           })
         ),
-        trackShipment: jest.fn(),
-        validateAddress: jest.fn(),
       };
 
       const mockFastProvider2: IShippingProvider = {
@@ -44,8 +42,6 @@ describe('POST /api/quotes - Error Handling Integration Tests', () => {
             transportMode: 'Air',
           })
         ),
-        trackShipment: jest.fn(),
-        validateAddress: jest.fn(),
       };
 
       const mockSlowProvider: IShippingProvider = {
@@ -60,8 +56,6 @@ describe('POST /api/quotes - Error Handling Integration Tests', () => {
             transportMode: 'Truck',
           }), 6000)) // 6 seconds - will timeout
         ),
-        trackShipment: jest.fn(),
-        validateAddress: jest.fn(),
       };
 
       const quoteService = new QuoteService([mockFastProvider1, mockSlowProvider, mockFastProvider2]);
@@ -105,14 +99,10 @@ describe('POST /api/quotes - Error Handling Integration Tests', () => {
             transportMode: 'Truck',
           })
         ),
-        trackShipment: jest.fn(),
-        validateAddress: jest.fn(),
       };
 
       const mockOfflineProvider: IShippingProvider = {
         calculateShipping: jest.fn().mockRejectedValue(new Error('Service unavailable')),
-        trackShipment: jest.fn(),
-        validateAddress: jest.fn(),
       };
 
       const quoteService = new QuoteService([mockOnlineProvider, mockOfflineProvider]);
@@ -143,14 +133,10 @@ describe('POST /api/quotes - Error Handling Integration Tests', () => {
     it('should return 503 when all providers are offline', async () => {
       const mockOfflineProvider1: IShippingProvider = {
         calculateShipping: jest.fn().mockRejectedValue(new Error('Timeout')),
-        trackShipment: jest.fn(),
-        validateAddress: jest.fn(),
       };
 
       const mockOfflineProvider2: IShippingProvider = {
         calculateShipping: jest.fn().mockRejectedValue(new Error('Service down')),
-        trackShipment: jest.fn(),
-        validateAddress: jest.fn(),
       };
 
       const quoteService = new QuoteService([mockOfflineProvider1, mockOfflineProvider2]);
@@ -179,8 +165,6 @@ describe('POST /api/quotes - Error Handling Integration Tests', () => {
     it('should include retry-after in 503 response', async () => {
       const mockOfflineProvider: IShippingProvider = {
         calculateShipping: jest.fn().mockRejectedValue(new Error('All down')),
-        trackShipment: jest.fn(),
-        validateAddress: jest.fn(),
       };
 
       const quoteService = new QuoteService([mockOfflineProvider]);
@@ -218,8 +202,6 @@ describe('POST /api/quotes - Error Handling Integration Tests', () => {
             transportMode: 'Truck',
           })
         ),
-        trackShipment: jest.fn(),
-        validateAddress: jest.fn(),
       };
 
       const mockSlowProvider: IShippingProvider = {
@@ -234,8 +216,6 @@ describe('POST /api/quotes - Error Handling Integration Tests', () => {
             transportMode: 'Truck',
           }), 7000)) // 7 seconds
         ),
-        trackShipment: jest.fn(),
-        validateAddress: jest.fn(),
       };
 
       const quoteService = new QuoteService([mockFastProvider, mockSlowProvider]);

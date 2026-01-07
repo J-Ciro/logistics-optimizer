@@ -17,8 +17,18 @@ export default {
     'src/**/*.ts',
     '!src/**/*.test.ts',
     '!src/**/__tests__/**',
+    '!src/index.ts',
+    '!src/app.ts',
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   testMatch: ['**/__tests__/**/*.test.ts', '**/*.test.ts'],
+  coverageThreshold: {
+    global: {
+      branches: 65,
+      functions: 70,
+      lines: 70,
+      statements: 70,
+    },
+  },
 };

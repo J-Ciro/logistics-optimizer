@@ -55,7 +55,8 @@ jobs:
         run: npm run build
       
       - name: 🧪 Run unit tests
-        run: npm test -- --coverage --passWithNoTests
+        #run: npm test -- --coverage --passWithNoTests
+        run: npm run test:coverage || npm test -- --coverage
       
       - name: 📊 Upload coverage to Codecov (Node 20 only)
         if: matrix.node-version == '20.x'
@@ -126,6 +127,7 @@ jobs:
       
       - name: 🧪 Run unit tests (Vitest)
         run: npm test -- --coverage --passWithNoTests
+      
       
       - name: 📊 Upload coverage to Codecov (Node 20 only)
         if: matrix.node-version == '20.x'
