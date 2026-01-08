@@ -32,7 +32,7 @@ export const QuoteRequestForm = ({ onSubmit, loading = false }: QuoteRequestForm
       const requestData: IQuoteRequest = {
         origin: formData.origin,
         destination: formData.destination,
-        weight: parseFloat(formData.weight),
+        weight: Number.parseFloat(formData.weight),
         pickupDate: formData.pickupDate,
         fragile: formData.fragile,
       };

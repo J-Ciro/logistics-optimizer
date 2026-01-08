@@ -25,10 +25,6 @@ export interface ISystemStatus {
   timestamp: string;
 }
 
-/**
- * Computed system status metrics
- * Derived from ISystemStatus
- */
 export interface ISystemStatusMetrics {
   systemStatus: SystemStatusType;
   activeProviders: number;

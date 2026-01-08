@@ -1,3 +1,10 @@
+// HUMAN REVIEW
+
+/***
+ * Se mandaron constantes a los utils/constants.ts para mejor mantenimiento
+ * 
+ */
+
 import { classMap, iconMap } from "../utils/constants";
 
 
@@ -8,7 +15,7 @@ interface ValidationMessageProps {
 
 
 
-export function ValidationMessage({ message, type }: ValidationMessageProps) {
+export function ValidationMessage({ message, type }: Readonly<ValidationMessageProps>) {
   if (!message) return null;
   
   return (

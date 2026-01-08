@@ -1,8 +1,3 @@
-//HUMAN COMMENT Start
-//REFACTORED: Uses providerConfig for provider configuration (simplified from ProviderRegistry)
-//Add new providers in utils/providerConfig.ts - no classes needed
-//HUMAN COMMENT End
-
 import type { IQuote, IProviderMessage } from '../models/Quote';
 import { getProviderColor } from '../utils/providerConfig';
 import { ProviderLogo } from './ProviderLogo';
@@ -32,25 +27,27 @@ export const QuoteResultsList = ({ quotes, messages }: QuoteResultsListProps) =>
       <div className="flex flex-col gap-4">
         {quotes.map((quote, index) => {
           const providerColor = getProviderColor(quote.providerId);
+          let cardVariantClasses = 'border-border-light hover:border-primary/50';
+          if (quote.isCheapest) {
+            cardVariantClasses = 'border-accent-success hover:border-accent-success/70';
+          } else if (quote.isFastest) {
+            cardVariantClasses = 'border-accent-info shadow-xl shadow-accent-info/10';
+          }
 
           return (
             <div
-              key={`${quote.providerId}-${index}`}
-              data-testid="quote-card"
-              className={`group relative overflow-hidden rounded-xl border ${
-                quote.isCheapest ? 'border-accent-success hover:border-accent-success/70' :
-                quote.isFastest ? 'border-accent-info shadow-xl shadow-accent-info/10' :
-                'border-border-light hover:border-primary/50'
-              } bg-card-light p-6 transition-all hover:shadow-lg cursor-pointer`}
-            >
-              {/* Left Border Accent */}
+      key={`${quote.providerId}-${index}`}
+      data-testid="quote-card"
+      className={`group relative overflow-hidden rounded-xl border ${cardVariantClasses} bg-card-light p-6 transition-all hover:shadow-lg cursor-pointer`}
+    >
+             
               <div className={`absolute top-0 left-0 w-1 h-full ${providerColor}`}></div>
 
               <div className="flex flex-col sm:flex-row gap-6 items-center">
-                {/* Provider Logo - uses providerConfig */}
+              
                 <ProviderLogo providerId={quote.providerId} />
 
-                {/* Provider Details */}
+      
                 <div className="flex-1 flex flex-col gap-1 w-full text-center sm:text-left">
                   <h4 className="text-text-dark text-lg font-bold">{quote.providerName}</h4>
                   <div className="flex items-center justify-center sm:justify-start gap-4 text-sm text-text-muted">
