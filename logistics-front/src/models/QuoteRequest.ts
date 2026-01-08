@@ -5,6 +5,6 @@ export interface IQuoteRequest {
   origin: string;
   destination: string;
   weight: number;
-  pickupDate: string; // ISO 8601 date string
+  pickupDate: string; 
   fragile: boolean;
 }

@@ -73,7 +73,7 @@ function App() {
                     className="bg-border-light hover:bg-primary hover:text-white text-text-dark px-5 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-colors"
                   >
                     <span className="material-symbols-outlined">refresh</span>
-                    New Quote
+                    { "New Quote"}
                   </button>
                 </>
               )}
