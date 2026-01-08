@@ -52,3 +52,37 @@ export const FORM_FIELDS = {
   PICKUP_DATE: 'pickupDate',
   FRAGILE: 'fragile',
 } as const;
+
+
+export const iconMap = {
+  error: '',
+  warning: '⚠️',
+  info: 'ℹ️',
+};
+
+export const classMap = {
+  error: 'text-error',
+  warning: 'text-warning',
+  info: 'text-info',
+};
+
+export const statusConfig = {
+  online: {
+    icon: '🟢',
+    label: 'En Línea',
+    bgColor: 'bg-green-500',
+    textColor: 'text-green-700',
+  },
+  offline: {
+    icon: '🔴',
+    label: 'Fuera de Línea',
+    bgColor: 'bg-red-500',
+    textColor: 'text-red-700',
+  },
+  degraded: {
+    icon: '⚠️',
+    label: 'Degradado',
+    bgColor: 'bg-yellow-500',
+    textColor: 'text-yellow-700',
+  },
+};

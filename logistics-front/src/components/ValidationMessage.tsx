@@ -1,21 +1,12 @@
-// ValidationMessage component for displaying validation errors, warnings, and info messages
+import { classMap, iconMap } from "../utils/constants";
+
 
 interface ValidationMessageProps {
   message: string | null;
   type: 'error' | 'warning' | 'info';
 }
 
-const iconMap = {
-  error: '',
-  warning: '⚠️',
-  info: 'ℹ️',
-};
 
-const classMap = {
-  error: 'text-error',
-  warning: 'text-warning',
-  info: 'text-info',
-};
 
 export function ValidationMessage({ message, type }: ValidationMessageProps) {
   if (!message) return null;

@@ -1,7 +1,4 @@
-/**
- * Centralized validation rules for quote requests
- * Implements Single Responsibility Principle
- */
+
 
 import { VALIDATION } from '../constants';
 
@@ -13,8 +10,8 @@ export class QuoteValidationRules {
   /**
    * Validate origin field - must not be empty
    */
-  static validateOrigin(origin: string): string | undefined {
-    if (typeof origin === 'string' && origin.trim() === '') {
+  static validateOrigin(origin: string | number | boolean | undefined): string | undefined {
+    if (typeof origin !== 'string' || origin.trim() === '') {
       return 'El origen es requerido';
     }
     return undefined;
@@ -23,8 +20,8 @@ export class QuoteValidationRules {
   /**
    * Validate destination field - must not be empty
    */
-  static validateDestination(destination: string): string | undefined {
-    if (typeof destination === 'string' && destination.trim() === '') {
+  static validateDestination(destination: string | number | boolean | undefined): string | undefined {
+    if (typeof destination !== 'string' || destination.trim() === '') {
       return 'El destino es requerido';
     }
     return undefined;
@@ -33,13 +30,15 @@ export class QuoteValidationRules {
   /**
    * Validate weight field - must be between MIN and MAX kg
    */
-  static validateWeight(weight: string | number): string | undefined {
+  static validateWeight(weight: string | number | boolean | undefined): string | undefined {
     let weightNum: number;
 
     if (typeof weight === 'string') {
       weightNum = parseFloat(weight);
-    } else {
+    } else if (typeof weight === 'number') {
       weightNum = weight;
+    } else {
+      return `El peso debe ser mayor a ${VALIDATION.WEIGHT.MIN} kg`;
     }
 
     if (isNaN(weightNum) || weightNum <= 0) {
@@ -61,7 +60,7 @@ export class QuoteValidationRules {
    * Validate pickup date - must be today or future, max 30 days from now
    * Uses string comparison to avoid timezone issues with ISO dates
    */
-  static validatePickupDate(date: string): string | undefined {
+  static validatePickupDate(date: string | number | boolean | undefined): string | undefined {
     if (typeof date !== 'string' || !date) {
       return 'La fecha es requerida';
     }
@@ -91,7 +90,7 @@ export class QuoteValidationRules {
   /**
    * Validate fragile checkbox - just type check (can't be invalid)
    */
-  static validateFragile(fragile: boolean): string | undefined {
+  static validateFragile(fragile: string | number | boolean | undefined): string | undefined {
     if (typeof fragile !== 'boolean') {
       return 'El campo frágil debe ser un booleano';
     }

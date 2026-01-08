@@ -11,6 +11,7 @@ export interface QuoteFormState {
   weight: string;
   pickupDate: string;
   fragile: boolean;
+  [key: string]: string | boolean; 
 }
 
 /**
