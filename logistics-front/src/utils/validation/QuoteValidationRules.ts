@@ -1,7 +1,4 @@
-/**
- * Centralized validation rules for quote requests
- * Implements Single Responsibility Principle
- */
+
 
 import { VALIDATION } from '../constants';
 

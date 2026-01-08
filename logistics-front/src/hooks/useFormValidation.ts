@@ -1,8 +1,3 @@
-/**
- * Legacy validation hooks
- * DEPRECATED: Use QuoteValidator from domain/validation/QuoteValidator instead
- * Kept for backward compatibility during migration
- */
 
 import { QuoteValidator } from '../utils/validation/QuoteValidator';
 
