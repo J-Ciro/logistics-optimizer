@@ -1,0 +1,50 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ValidationMessage > should match snapshot for error state 1`] = `
+<div>
+  <div
+    aria-live="polite"
+    class="flex items-center gap-2 text-sm mt-1 text-error"
+    role="alert"
+  >
+    <span />
+    <span>
+      Error
+    </span>
+  </div>
+</div>
+`;
+
+exports[`ValidationMessage > should match snapshot for info state 1`] = `
+<div>
+  <div
+    aria-live="polite"
+    class="flex items-center gap-2 text-sm mt-1 text-info"
+    role="alert"
+  >
+    <span>
+      ℹ️
+    </span>
+    <span>
+      Info
+    </span>
+  </div>
+</div>
+`;
+
+exports[`ValidationMessage > should match snapshot for warning state 1`] = `
+<div>
+  <div
+    aria-live="polite"
+    class="flex items-center gap-2 text-sm mt-1 text-warning"
+    role="alert"
+  >
+    <span>
+      ⚠️
+    </span>
+    <span>
+      Warning
+    </span>
+  </div>
+</div>
+`;

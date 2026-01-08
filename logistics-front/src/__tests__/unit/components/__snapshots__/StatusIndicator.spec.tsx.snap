@@ -1,0 +1,58 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`StatusIndicator > Snapshots > should match snapshot for degraded state 1`] = `
+<div>
+  <div
+    class="inline-flex items-center gap-2"
+  >
+    <span
+      class="text-lg"
+    >
+      ⚠️
+    </span>
+    <span
+      class="font-medium text-yellow-700"
+    >
+      Degradado
+    </span>
+  </div>
+</div>
+`;
+
+exports[`StatusIndicator > Snapshots > should match snapshot for offline state 1`] = `
+<div>
+  <div
+    class="inline-flex items-center gap-2"
+  >
+    <span
+      class="text-lg"
+    >
+      🔴
+    </span>
+    <span
+      class="font-medium text-red-700"
+    >
+      Fuera de Línea
+    </span>
+  </div>
+</div>
+`;
+
+exports[`StatusIndicator > Snapshots > should match snapshot for online state 1`] = `
+<div>
+  <div
+    class="inline-flex items-center gap-2"
+  >
+    <span
+      class="text-lg"
+    >
+      🟢
+    </span>
+    <span
+      class="font-medium text-green-700"
+    >
+      En Línea
+    </span>
+  </div>
+</div>
+`;

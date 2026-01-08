@@ -1,0 +1,39 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`QuoteBadge > Snapshots > should match snapshot for cheapest badge 1`] = `
+<div>
+  <div
+    aria-label="Opción más barata"
+    class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-white text-sm font-semibold bg-green-500"
+  >
+    <span
+      class="text-base"
+    >
+      $
+    </span>
+    <span>
+      Más Barata
+    </span>
+  </div>
+</div>
+`;
+
+exports[`QuoteBadge > Snapshots > should match snapshot for fastest badge 1`] = `
+<div>
+  <div
+    aria-label="Opción más rápida"
+    class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-white text-sm font-semibold bg-blue-500"
+  >
+    <span
+      class="text-base"
+    >
+      ⚡
+    </span>
+    <span>
+      Más Rápida
+    </span>
+  </div>
+</div>
+`;
+
+exports[`QuoteBadge > Snapshots > should match snapshot for hidden badge 1`] = `<div />`;
