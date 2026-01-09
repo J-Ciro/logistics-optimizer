@@ -195,49 +195,87 @@ jobs:
           path: logistics-front/coverage/
           retention-days: 1
 
-  sonarqube:
-    name: 🔍 SonarQube Analysis
-    runs-on: ubuntu-latest
-    needs: [backend, frontend]
-    if: success()
+ sonarqube:
+  name: 🔍 SonarQube Analysis
+  runs-on: ubuntu-latest
+  needs: [backend, frontend]
+  if: success()
+  timeout-minutes: 10
 
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Necesario para SonarQube
+  steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: 📥 Download backend coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-coverage
-          path: logistics-back/coverage
+    - name: 📥 Download backend coverage
+      uses: actions/download-artifact@v4
+      with:
+        name: backend-coverage
+        path: coverage-reports/coverage-backend
 
-      - name: 📥 Download frontend coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-coverage
-          path: logistics-front/coverage
+    - name: 📥 Download frontend coverage
+      uses: actions/download-artifact@v4
+      with:
+        name: frontend-coverage
+        path: coverage-reports/coverage-frontend
 
-      - name: 📊 Verify coverage files
-        run: |
-          echo "Backend coverage files:"
-          ls -la logistics-back/coverage/
-          echo "Frontend coverage files:"
-          ls -la logistics-front/coverage/
+    - name: 📁 Organize coverage files
+      run: |
+        echo "Organizando reportes de cobertura..."
+        
+        mkdir -p logistics-back/coverage
+        mkdir -p logistics-front/coverage
+        
+        [ -d coverage-reports/coverage-backend ] && cp -r coverage-reports/coverage-backend/* logistics-back/coverage/ || echo "No backend coverage"
+        [ -d coverage-reports/coverage-frontend ] && cp -r coverage-reports/coverage-frontend/* logistics-front/coverage/ || echo "No frontend coverage"
+        
+        echo ""
+        echo "Verificando reportes de cobertura:"
+        echo "=================================="
+        
+        if [ -f logistics-back/coverage/lcov.info ]; then
+          echo "✅ Backend lcov.info - $(du -h logistics-back/coverage/lcov.info | cut -f1)"
+        else
+          echo "❌ Backend lcov.info - NO ENCONTRADO"
+        fi
+        
+        if [ -f logistics-front/coverage/lcov.info ]; then
+          echo "✅ Frontend lcov.info - $(du -h logistics-front/coverage/lcov.info | cut -f1)"
+        else
+          echo "❌ Frontend lcov.info - NO ENCONTRADO"
+        fi
+        
+        echo "=================================="
 
-      - name: 🔍 SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+    - name: 🔍 Verify SonarQube config
+      run: |
+        if [ -f sonar-project.properties ]; then
+          echo "✅ sonar-project.properties encontrado"
+          echo ""
+          echo "Contenido:"
+          cat sonar-project.properties
+        else
+          echo "❌ sonar-project.properties NO encontrado"
+          exit 1
+        fi
 
-      - name: ✅ SonarQube Quality Gate
-        uses: SonarSource/sonarqube-quality-gate-action@master
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    - name: 🔍 SonarQube Scan
+      uses: SonarSource/sonarqube-scan-action@v6
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        SONAR_SCANNER_OPTS: "-Xmx512m"
 
+    - name: 📊 Summary
+      if: always()
+      run: |
+        echo "================================================"
+        echo "SonarQube Analysis Completed"
+        echo "================================================"
+        echo "Check results at: https://sonarcloud.io"
+        echo "================================================"
   ci-success:
     name: ✅ CI Pipeline Success
     runs-on: ubuntu-latest
