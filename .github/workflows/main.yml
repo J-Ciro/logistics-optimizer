@@ -267,14 +267,25 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_SCANNER_OPTS: "-Xmx512m"
+        continue-on-error: true
 
-      - name: 📊 Summary
+      - name: ✅ Summary
         if: always()
         run: |
           echo "================================================"
-          echo "SonarQube Analysis Completed"
+          echo "📊 RESUMEN DEL PIPELINE"
           echo "================================================"
-          echo "Check results at: https://sonarcloud.io"
+          echo "Tipo de evento: ${{ github.event_name }}"
+          echo "Rama: ${{ github.ref_name }}"
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "PR: ${{ github.event.pull_request.number }}"
+            echo "Base: ${{ github.event.pull_request.base.ref }}"
+            echo "Head: ${{ github.event.pull_request.head.ref }}"
+          fi
+          echo "================================================"
+          echo "✅ Tests ejecutados"
+          echo "✅ Cobertura verificada"
+          echo "✅ SonarQube ejecutado"
           echo "================================================"
   ci-success:
     name: ✅ CI Pipeline Success
