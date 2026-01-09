@@ -15,7 +15,7 @@ export interface IProviderWithName {
 
 export class ProviderHealthService {
   private readonly TIMEOUT_MS = 5000; // 5 seconds timeout
-  private providers: IProviderWithName[];
+  private readonly providers: IProviderWithName[];
 
   constructor(providers: IShippingProvider[] | IProviderWithName[]) {
     // Support both formats: array of providers or array of {provider, name}
