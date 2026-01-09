@@ -20,6 +20,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: |
+            logistics-back/package-lock.json
+            logistics-front/package-lock.json
 
       - name: Install dependencies - Backend
         working-directory: ./logistics-back
