@@ -3,7 +3,9 @@ import { FedExAdapter } from '../../../../infrastructure/adapters/FedExAdapter';
 import { DHLAdapter } from '../../../../infrastructure/adapters/DHLAdapter';
 import { LocalAdapter } from '../../../../infrastructure/adapters/LocalAdapter';
 import { QuoteRequest } from '../../../../domain/entities/QuoteRequest';
+import { Quote } from '../../../../domain/entities/Quote';
 import { IShippingProvider } from '../../../../domain/interfaces/IShippingProvider';
+import { IQuoteRepository } from '../../../../domain/interfaces/IQuoteRepository';
 
 describe('QuoteService', () => {
   let quoteService: QuoteService;
@@ -307,5 +309,241 @@ describe('QuoteService', () => {
       expect(quotes[0].providerName).toBe('FedEx Ground');
       expect(quotes[1].providerName).toBe('DHL Express');
     }, 10000);
+  });
+
+  describe('getAllQuotesWithMessages', () => {
+    it('should include error messages when providers fail', async () => {
+      const mockFailingAdapter: IShippingProvider = {
+        calculateShipping: jest.fn().mockRejectedValue(new Error('Provider timeout')),
+      };
+
+      const serviceWithFailure = new QuoteService([
+        fedexAdapter,
+        mockFailingAdapter,
+        localAdapter,
+      ]);
+
+      const request = new QuoteRequest({
+        origin: 'New York, NY',
+        destination: 'Los Angeles, CA',
+        weight: 10,
+        pickupDate: new Date(Date.now() + 86400000),
+        fragile: false,
+      });
+
+      const { quotes, messages } = await serviceWithFailure.getAllQuotesWithMessages(request);
+
+      expect(quotes).toHaveLength(2);
+      expect(messages).toHaveLength(1);
+      expect(messages[0].provider).toBe('Provider 2');
+      expect(messages[0].message).toContain('not available');
+    });
+
+    it('should apply badges to quotes', async () => {
+      const request = new QuoteRequest({
+        origin: 'New York, NY',
+        destination: 'Los Angeles, CA',
+        weight: 10,
+        pickupDate: new Date(Date.now() + 86400000),
+        fragile: false,
+      });
+
+      const { quotes } = await quoteService.getAllQuotesWithMessages(request);
+
+      // At least one quote should have isCheapest = true
+      const cheapestCount = quotes.filter(q => q.isCheapest).length;
+      expect(cheapestCount).toBeGreaterThanOrEqual(1);
+
+      // At least one quote should have isFastest = true
+      const fastestCount = quotes.filter(q => q.isFastest).length;
+      expect(fastestCount).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('Cache functionality', () => {
+    it('should return cached quotes when cache hit occurs', async () => {
+      const cachedQuote = new Quote({
+        providerId: 'cached',
+        providerName: 'Cached Provider',
+        price: 5000,
+        currency: 'COP',
+        minDays: 1,
+        maxDays: 3,
+        transportMode: 'Air',
+        isCheapest: false,
+        isFastest: true,
+      });
+
+      const mockRepository: IQuoteRepository = {
+        findCached: jest.fn().mockResolvedValue([cachedQuote]),
+        saveMany: jest.fn().mockResolvedValue(undefined),
+        save: jest.fn().mockResolvedValue(undefined),
+        findAll: jest.fn().mockResolvedValue([]),
+      };
+
+      const serviceWithCache = new QuoteService(
+        [fedexAdapter, dhlAdapter, localAdapter],
+        mockRepository
+      );
+
+      const request = new QuoteRequest({
+        origin: 'New York, NY',
+        destination: 'Los Angeles, CA',
+        weight: 10,
+        pickupDate: new Date(Date.now() + 86400000),
+        fragile: false,
+      });
+
+      const { quotes } = await serviceWithCache.getAllQuotesWithMessages(request);
+
+      // Should return cached quote
+      expect(quotes).toHaveLength(1);
+      expect(quotes[0].price).toBe(5000);
+      expect(mockRepository.findCached).toHaveBeenCalledTimes(1);
+      // saveMany should not be called when returning cached quotes
+      expect(mockRepository.saveMany).not.toHaveBeenCalled();
+    });
+
+    it('should handle cache error gracefully and fetch fresh quotes', async () => {
+      const mockRepository: IQuoteRepository = {
+        findCached: jest.fn().mockRejectedValue(new Error('Cache connection failed')),
+        saveMany: jest.fn().mockResolvedValue(undefined),
+        save: jest.fn().mockResolvedValue(undefined),
+        findAll: jest.fn().mockResolvedValue([]),
+      };
+
+      const serviceWithFailingCache = new QuoteService(
+        [fedexAdapter, dhlAdapter, localAdapter],
+        mockRepository
+      );
+
+      const request = new QuoteRequest({
+        origin: 'New York, NY',
+        destination: 'Los Angeles, CA',
+        weight: 10,
+        pickupDate: new Date(Date.now() + 86400000),
+        fragile: false,
+      });
+
+      // Should not throw, should continue and fetch fresh quotes
+      const { quotes } = await serviceWithFailingCache.getAllQuotesWithMessages(request);
+
+      // Should still return quotes from providers
+      expect(quotes.length).toBeGreaterThan(0);
+      // Should still try to save to database
+      expect(mockRepository.saveMany).toHaveBeenCalled();
+    });
+
+    it('should save quotes to database after fetching fresh quotes', async () => {
+      const mockRepository: IQuoteRepository = {
+        findCached: jest.fn().mockResolvedValue([]), // Cache miss
+        saveMany: jest.fn().mockResolvedValue(undefined),
+        save: jest.fn().mockResolvedValue(undefined),
+        findAll: jest.fn().mockResolvedValue([]),
+      };
+
+      const serviceWithCache = new QuoteService(
+        [fedexAdapter, dhlAdapter, localAdapter],
+        mockRepository
+      );
+
+      const request = new QuoteRequest({
+        origin: 'New York, NY',
+        destination: 'Los Angeles, CA',
+        weight: 10,
+        pickupDate: new Date(Date.now() + 86400000),
+        fragile: false,
+      });
+
+      await serviceWithCache.getAllQuotesWithMessages(request);
+
+      // Should call saveMany to persist quotes
+      expect(mockRepository.saveMany).toHaveBeenCalledTimes(1);
+      expect(mockRepository.saveMany).toHaveBeenCalledWith(
+        expect.any(Array),
+        expect.any(Object)
+      );
+    });
+
+    it('should handle database save error gracefully', async () => {
+      const mockRepository: IQuoteRepository = {
+        findCached: jest.fn().mockResolvedValue([]), // Cache miss
+        saveMany: jest.fn().mockRejectedValue(new Error('Database connection failed')),
+        save: jest.fn().mockResolvedValue(undefined),
+        findAll: jest.fn().mockResolvedValue([]),
+      };
+
+      const serviceWithFailingDb = new QuoteService(
+        [fedexAdapter, dhlAdapter, localAdapter],
+        mockRepository
+      );
+
+      const request = new QuoteRequest({
+        origin: 'New York, NY',
+        destination: 'Los Angeles, CA',
+        weight: 10,
+        pickupDate: new Date(Date.now() + 86400000),
+        fragile: false,
+      });
+
+      // Should not throw even if saveMany fails
+      const { quotes } = await serviceWithFailingDb.getAllQuotesWithMessages(request);
+
+      // Should still return quotes from providers
+      expect(quotes.length).toBeGreaterThan(0);
+      // Should have tried to save
+      expect(mockRepository.saveMany).toHaveBeenCalled();
+    });
+
+    it('should not save empty quotes to database', async () => {
+      const mockRepository: IQuoteRepository = {
+        findCached: jest.fn().mockResolvedValue([]), // Cache miss
+        saveMany: jest.fn(),
+        save: jest.fn().mockResolvedValue(undefined),
+        findAll: jest.fn().mockResolvedValue([]),
+      };
+
+      const failingAdapters = [
+        { calculateShipping: jest.fn().mockRejectedValue(new Error('Timeout')) },
+        { calculateShipping: jest.fn().mockRejectedValue(new Error('Timeout')) },
+      ];
+
+      const serviceWithFailingAdapters = new QuoteService(
+        failingAdapters as IShippingProvider[],
+        mockRepository
+      );
+
+      const request = new QuoteRequest({
+        origin: 'New York, NY',
+        destination: 'Los Angeles, CA',
+        weight: 10,
+        pickupDate: new Date(Date.now() + 86400000),
+        fragile: false,
+      });
+
+      const { quotes } = await serviceWithFailingAdapters.getAllQuotesWithMessages(request);
+
+      // No quotes returned
+      expect(quotes).toHaveLength(0);
+      // Should not save empty quotes array
+      expect(mockRepository.saveMany).not.toHaveBeenCalled();
+    });
+
+    it('should handle service without repository gracefully', async () => {
+      const serviceWithoutCache = new QuoteService([fedexAdapter, dhlAdapter, localAdapter]);
+
+      const request = new QuoteRequest({
+        origin: 'New York, NY',
+        destination: 'Los Angeles, CA',
+        weight: 10,
+        pickupDate: new Date(Date.now() + 86400000),
+        fragile: false,
+      });
+
+      const { quotes } = await serviceWithoutCache.getAllQuotesWithMessages(request);
+
+      // Should work without repository
+      expect(quotes).toHaveLength(3);
+    });
   });
 });
